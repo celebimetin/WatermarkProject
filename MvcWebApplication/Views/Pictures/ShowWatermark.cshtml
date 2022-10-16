@@ -1,0 +1,13 @@
+﻿@{
+    ViewData["Title"] = "ShowWatermark";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h5>Show Watermark</h5>
+<hr />
+<div id="images">
+    @foreach (var item in ViewBag.fileBlobs as List<FileBlob>)
+    {
+        <img data-name="@item.Name" src="@item.Url" style="width:300px;">
+    }
+</div>

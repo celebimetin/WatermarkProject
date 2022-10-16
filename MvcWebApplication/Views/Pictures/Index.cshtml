@@ -1,0 +1,65 @@
+﻿@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h6 id="status"></h6>
+<hr />
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <form class="form-inline" asp-action="Index" method="post" enctype="multipart/form-data">
+            <input type="file" name="pictures" multiple />
+            <input class="btn btn-primary" type="submit" value="Add Picture" />
+        </form>
+
+        <div class="form-inline mt-3">
+            <input class="form-control" type="text" id="watermarkText" />
+            <button class="btn btn-success ml-2" id="AddWatermark">Add Watermark</button>
+        </div>
+
+        <h5>Pictures</h5>
+        <hr />
+        <div id="images">
+            @foreach (var item in ViewBag.fileBlobs as List<FileBlob>)
+            {
+                <img data-name="@item.Name" src="@item.Url" style="width:300px;">
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(() => {
+            var connection = new signalR.HubConnectionBuilder().withUrl("/NitificationHub").build();
+
+            connection.start().then(() => {
+                console.log("HubId: ", connection.connectionId);
+            })
+
+            connection.on("NotifyCompleteWatermarkProcess", () => {
+                $("#status").text("Resimlerinize yazı eklendi.");
+            })
+
+            var Pictures = new Array();
+            var UserId = "@ViewBag.userId";
+            var City = "@ViewBag.city";
+
+            $("#AddWatermark").click(function () {
+                let pictureWatermark = { "UserId": UserId, "City": City, "ConnectionId": connection.connectionId, "WatermarkText": $("#watermarkText").val(), "WatermarkPicture": Pictures };
+
+                $.post("/Pictures/AddWatermark", pictureWatermark, (data) => {
+                    $("#status").text("Resimlerinize yazı ekleniyor.");
+                })
+            })
+
+            $("#images img").click(function () {
+                $(this).css("border", "3px solid red");
+                Pictures.push($(this).attr("data-name"));
+
+                console.log(Pictures);
+            })
+        })
+    </script>
+}
